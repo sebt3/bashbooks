@@ -1,0 +1,87 @@
+#!/bin/bash
+# BSD 3-Clause License
+# 
+# Copyright (c) 2018, Sébastien Huss
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# * Neither the name of the copyright holder nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ARGS_info="BashBooks: a bash script to rule them all"
+BASE_dir=${BASE_dir:-"$(cd "$(dirname $0)";pwd)"}
+CONF_dir=${CONF_dir:-"${BASE_dir}/conf"}
+SHLIBDIR=${SHLIBDIR:-"${BASE_dir}/bashlibs"}
+LOG_dir=${LOG_dir:-"${BASE_dir}/logs"}
+OUT_level=${OUT_level:-NOTICE}
+. $SHLIBDIR/core.lib.bash
+. $SHLIBDIR/task.lib.bash
+
+host.list() {
+	awk '$0!=""&&$1!="#"{print $1}'<"$CONF_dir/hostlist"
+}
+host.get() {
+	awk -v L="$1" '$1==L&&$2=="="{$1="";$2="";print}'<"$CONF_dir/hostlist"
+}
+net.resolver() {
+	if [ ! -f "$CONF_dir/hostlist" ];then
+		echo "$@"
+		return
+	fi
+	local args=("$@")
+	local i
+	for (( i=0; i<${#@}; i++));do
+		host.get ${args[$i]}
+	done
+}
+
+args.pre() {
+	ARGS_short_cmd=(BOOK "${ARGS_short_cmd[@]}")
+}
+
+BOOKS_dir=${BOOKS_dir:-"${BASE_dir}/books"}
+args.option.declare BOOK -B --book Mandatory C "Book to use"
+books.list() {
+	local f i
+	for i in "$BOOKS_dir"/*sh;do 
+		f=${i##*/};echo ${f%.sh}
+	done
+}
+books.load() {
+	[ ! -f "${BOOKS_dir}/${1}.sh" ] && return 1
+	. "${BOOKS_dir}/${1}.sh"
+	return 0
+}
+for tmp in $(books.list);do 
+	args.option BOOK "$tmp" "$(awk '/#@DESC@/{gsub("#@DESC@","");print}' <$BOOKS_dir/${tmp}.sh)"
+done
+args.callback BOOK books.load
+
+TARGET=${TARGET:-$(host.list|head -1)}
+args.option.declare TARGET   -t --target NotMandatory N "Run book on target"
+for tmp in $(host.list);do 
+	args.option TARGET "$tmp" ""
+done
+ARGS_short_cmd=("${ARGS_short_cmd[@]}" TARGET)
+act.script "$@"
