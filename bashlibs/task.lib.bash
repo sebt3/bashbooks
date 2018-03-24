@@ -1,7 +1,7 @@
 #!/bin/bash
 # BSD 3-Clause License
 # 
-# Copyright (c) 2018, Sébastien Huss
+# Copyright (c) 2017-2018, Sébastien Huss
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -37,9 +37,8 @@ net.resolve() {
 	fi
 	echo "$@"
 }
-net.runFunction() {
-	ssh -q -o PasswordAuthentication=no "$1" "$(typeset -f $2|awk 'NR>3 {print last} {last=$0}')"
-}
+net.run() { ssh -q -o PasswordAuthentication=no "$@"; }
+net.runFunction() { net.run "$1" "$(typeset -f $2|awk 'NR>3 {print last} {last=$0}')"; }
 
 TASK_target=()
 TASK_name=()
@@ -162,7 +161,6 @@ task.runUnit() {
 	else
 		out.ok "[$id] ${desc}"
 	fi
-	
 }
 task.runTarget() {
 	local id=$1;shift
@@ -171,8 +169,7 @@ task.runTarget() {
 	local desc="$@"
 	out.task "[$id][$target] ${desc}"
 	if is.function "${name}.precheck";then
-	#TODO add support for TARGET
-		eval "${name}.precheck";ret=$?;
+		net.runFunction "$target" "${name}.precheck";ret=$?;
 		if [ $ret -ne 0 ];then
 			out.error "precheck for \"${desc}\" have failed"
 			out.lvl FAIL "[$id][$target] ${desc}"
@@ -198,7 +195,6 @@ task.runTarget() {
 	else
 		out.ok "[$id][$target] ${desc}"
 	fi
-	
 }
 task.run() {
 	local min=${1:-0}
