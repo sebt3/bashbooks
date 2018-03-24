@@ -59,6 +59,9 @@ net.resolver() {
 args.pre() {
 	ARGS_short_cmd=(BOOK "${ARGS_short_cmd[@]}")
 }
+args.post() {
+	LOG_file="${SCRIPT_name}.log.$BOOK.$ACT.$(log.stamp)"
+}
 
 BOOKS_dir=${BOOKS_dir:-"${BASE_dir}/books"}
 args.option.declare BOOK -B --book Mandatory C "Book to use"

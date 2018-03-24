@@ -347,7 +347,8 @@ args.parse() {
 		done
 	elif [ $# -gt 0 ] && is.set ARGS_short_cmd;then
 		ARGS_tmp=("${ARGS_short_cmd[@]}")
-		while is.set ARGS_tmp;do 
+		while is.set ARGS_tmp;do
+			[ $# -eq 0 ] && break;
 			v=${ARGS_tmp[0]};ARGS_tmp=("${ARGS_tmp[@]:1}")
 			for (( i=0; i<${#ARGS_vars[@]}; i++ ));do
 				if [[ "${ARGS_vars[$i]}" == "$v" ]];then
@@ -377,7 +378,7 @@ args.parse() {
 							exit 1
 						fi
 					fi
-					shift
+					shift;break
 				fi
 			done
 		done
