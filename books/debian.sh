@@ -40,6 +40,5 @@ upgrade.upgrade() {
 upgrade() {
 	task.add "$TARGET" upgrade.update		"Update apt repository"
 	task.add "$TARGET" upgrade.upgrade		"Upgrade the system"
-	echo "runned upgrade \"${TASK_name[@]}\""
 }
 act.add.post upgrade "Upgrade the OS"

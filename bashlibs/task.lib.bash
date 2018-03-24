@@ -331,7 +331,7 @@ act.script() {
 		done
 	fi
 	if ! is.number $MIN || [ $MIN -lt 0 ] || [ $MIN -ge ${#TASK_name[@]} ];then
-		out.error "\"$MIN\" is an invalid value for MIN ${#TASK_name[@]}"
+		out.error "\"$MIN\" is an invalid value for MIN"
 		return 1
 	fi
 	if ! is.number $MAX || [ $MAX -lt 0 ] || [ $MAX -ge ${#TASK_name[@]} ];then
