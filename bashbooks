@@ -38,14 +38,16 @@ OUT_level=${OUT_level:-NOTICE}
 . $SHLIBDIR/core.lib.bash
 . $SHLIBDIR/task.lib.bash
 
+HOST_listfile=${HOST_listfile:-"$CONF_dir/hostlist"}
+
 host.list() {
-	awk '$0!=""&&$1!="#"{print $1}'<"$CONF_dir/hostlist"
+	awk '$0!=""&&$1!="#"{print $1}'<"$HOST_listfile"
 }
 host.get() {
-	awk -v L="$1" '$1==L&&$2=="="{$1="";$2="";print}'<"$CONF_dir/hostlist"
+	awk -v L="$1" '$1==L&&$2=="="{$1="";$2="";print}'<"$HOST_listfile"
 }
 net.resolver() {
-	if [ ! -f "$CONF_dir/hostlist" ];then
+	if [ ! -f "$HOST_listfile" ];then
 		echo "$@"
 		return
 	fi

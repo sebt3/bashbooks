@@ -35,7 +35,7 @@ upgrade.update() {
 	apt-get -y update
 }
 upgrade.upgrade() {
-	apt-get -y upgrade
+	LANG=C apt-get -y upgrade
 }
 upgrade() {
 	task.add "$TARGET" upgrade.update		"Update apt repository"
